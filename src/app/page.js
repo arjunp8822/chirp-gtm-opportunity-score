@@ -18,6 +18,7 @@ export default function Home() {
   const [historicalPatternMatch, setHistoricalPatternMatch] = useState(null);
   const [opportunityScore, setOpportunityScore] = useState(null);
   const [userEmail, setUserEmail] = useState("");
+  const fileInputRef = useRef(null);
 
   const handleInput = () => {
     const textarea = textareaRef.current;
@@ -145,10 +146,44 @@ export default function Home() {
               onChange={(e) => setInputText(e.target.value)}
             />
             <div className="flex justify-between items-center w-full px-3 pb-2">
-              <button className="bg-[var(--brand-color)] text-white rounded-md px-3 py-2 flex gap-1 justify-center items-center cursor-pointer">
-                <GoPlus />
-                <p>Add file</p>
-              </button>
+              <input
+                type="file"
+                accept=".txt"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const text = event.target?.result;
+                      if (typeof text === "string") {
+                        setInputText(text); // set file text into inputText for LLM use
+                      }
+                    };
+                    reader.readAsText(file);
+                  }
+                }}
+                className="hidden"
+                id="fileUpload"
+              />
+
+              <div className="flex gap-2 items-center">
+                <label
+                  htmlFor="fileUpload"
+                  className="bg-[var(--brand-color)] text-white rounded-md px-3 py-2 flex gap-1 justify-center items-center cursor-pointer"
+                >
+                  <GoPlus />
+                  <p>Add file</p>
+                </label>
+
+                {inputText && (
+                  <p className="text-sm text-gray-600">
+                    {inputText.length > 100
+                      ? `Loaded file (${inputText.length} characters)`
+                      : inputText}
+                  </p>
+                )}
+              </div>
+
               <button
                 className="rounded-md px-3 py-2 bg-[var(--secondary-color)] text-white cursor-pointer"
                 onClick={submitHandler}
@@ -267,7 +302,7 @@ export default function Home() {
             <button
               className="rounded-md px-6 py-3 bg-[var(--secondary-color)] text-white"
               onClick={() => {
-                console.log("Email submitted:", userEmail); // Replace with real handler
+                console.log("Email submitted:", userEmail);
                 alert("Thanks! We'll be in touch soon.");
               }}
             >
